@@ -54,6 +54,7 @@ public class BufferPaddingExecutor {
     private final BufferedUidProvider uidProvider;
 
     /** Padding immediately by the thread pool */
+    // 多线程方式填充ID
     private final ExecutorService bufferPadExecutors;
     /** Padding schedule thread */
     private final ScheduledExecutorService bufferPadSchedule;

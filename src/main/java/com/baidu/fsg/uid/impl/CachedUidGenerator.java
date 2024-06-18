@@ -96,7 +96,7 @@ public class CachedUidGenerator extends DefaultUidGenerator implements Disposabl
 
     /**
      * Get the UIDs in the same specified second under the max sequence
-     * 
+     * 一次性就将指定时间秒内可产生的ID生成并保存在内存中
      * @param currentSecond
      * @return UID list, size of {@link BitsAllocator#getMaxSequence()} + 1
      */
