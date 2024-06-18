@@ -154,7 +154,7 @@ public class RingBuffer {
         long nextCursor = cursor.updateAndGet(old -> old == tail.get() ? old : old + 1);
 
         // check for safety consideration, it never occurs
-        Assert.isTrue(nextCursor >= currentCursor, "Curosr can't move back");
+        Assert.isTrue(nextCursor >= currentCursor, "Cursor can't move back");
 
         // trigger padding in an async-mode if reach the threshold
         long currentTail = tail.get();

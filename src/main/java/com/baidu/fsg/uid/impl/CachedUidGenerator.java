@@ -35,7 +35,7 @@ import com.baidu.fsg.uid.exception.UidGenerateException;
  * Represents a cached implementation of {@link UidGenerator} extends
  * from {@link DefaultUidGenerator}, based on a lock free {@link RingBuffer}<p>
  * 
- * The spring properties you can specified as below:<br>
+ * The spring properties you can specify as below:<br>
  * <li><b>boostPower:</b> RingBuffer size boost for a power of 2, Sample: boostPower is 3, it means the buffer size 
  *                        will be <code>({@link BitsAllocator#getMaxSequence()} + 1) &lt;&lt;
  *                        {@link #boostPower}</code>, Default as {@value #DEFAULT_BOOST_POWER}

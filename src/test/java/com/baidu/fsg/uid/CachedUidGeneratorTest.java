@@ -2,6 +2,7 @@ package com.baidu.fsg.uid;
 
 import com.baidu.fsg.uid.impl.CachedUidGenerator;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,11 +40,18 @@ public class CachedUidGeneratorTest {
      */
     @Test
     public void testSerialGenerate() throws IOException {
+        StopWatch watch = new StopWatch();
+        watch.start();
+
         // Generate UID serially
         Set<Long> uidSet = new HashSet<>(SIZE);
         for (int i = 0; i < SIZE; i++) {
             doGenerate(uidSet, i);
         }
+
+        watch.stop();
+        // 生成700w个ID约需要28s
+        System.out.println(String.format("split %s milliseconds", watch.getTime()));
 
         // Check UIDs are all unique
         checkUniqueID(uidSet);

@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Resource;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,11 +39,18 @@ public class DefaultUidGeneratorTest {
      */
     @Test
     public void testSerialGenerate() {
+        StopWatch watch = new StopWatch();
+        watch.start();
+
         // Generate UID serially
         Set<Long> uidSet = new HashSet<>(SIZE);
         for (int i = 0; i < SIZE; i++) {
             doGenerate(uidSet, i);
         }
+
+        watch.stop();
+        // 生成10w个ID大约需要10s左右，平均每秒支持生成1w个ID
+        System.out.println(String.format("split %s milliseconds", watch.getTime()));
 
         // Check UIDs are all unique
         checkUniqueID(uidSet);

@@ -48,7 +48,7 @@ import com.baidu.fsg.uid.worker.WorkerIdAssigner;
  *   1bit          28bits              22bits         13bits
  * }</pre>
  *
- * You can also specified the bits by Spring property setting.
+ * You can also specify the bits by Spring property setting.
  * <li>timeBits: default as 28
  * <li>workerBits: default as 22
  * <li>seqBits: default as 13
