@@ -25,8 +25,11 @@ import com.baidu.fsg.uid.utils.ValuedEnum;
  * @author yutianbao
  */
 public enum WorkerNodeType implements ValuedEnum<Integer> {
+    /** 容器 */
+    CONTAINER(1),
 
-    CONTAINER(1), ACTUAL(2);
+    /** 实体机 */
+    ACTUAL(2);
 
     /**
      * Lock type

@@ -4,10 +4,15 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
     <!-- UID generator -->
+    <!-- 用完即弃的WorkerIdAssigner策略 -->
     <bean id="disposableWorkerIdAssigner" class="com.baidu.fsg.uid.worker.DisposableWorkerIdAssigner"/>
 
+    <!-- 重复使用WorkerIdAssigner策略 -->
+    <bean id="reusableWorkerIdAssigner" class="com.baidu.fsg.uid.worker.ReusableWorkerIdAssigner" />
+
     <bean id="defaultUidGenerator" class="com.baidu.fsg.uid.impl.DefaultUidGenerator" lazy-init="false">
-        <property name="workerIdAssigner" ref="disposableWorkerIdAssigner"/>
+        <!--<property name="workerIdAssigner" ref="disposableWorkerIdAssigner"/>-->
+        <property name="workerIdAssigner" ref="reusableWorkerIdAssigner"/>
 
         <!-- Specified bits & epoch as your demand. No specified the default value will be used -->
         <property name="timeBits" value="29"/>

@@ -28,13 +28,23 @@ import org.springframework.stereotype.Repository;
 public interface WorkerNodeDAO {
 
     /**
-     * Get {@link WorkerNodeEntity} by node host
+     * Get {@link WorkerNodeEntity} by node host and port
      * 
      * @param host
      * @param port
      * @return
      */
     WorkerNodeEntity getWorkerNodeByHostPort(@Param("host") String host, @Param("port") String port);
+
+    /**
+     * Get {@link WorkerNodeEntity} by node host and type
+     *
+     * @param host
+     * @param type
+     * @return
+     */
+    WorkerNodeEntity getWorkerNodeByHostType(@Param("host") String host, @Param("type") int type);
+
 
     /**
      * Add {@link WorkerNodeEntity}

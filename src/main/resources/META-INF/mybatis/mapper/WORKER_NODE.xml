@@ -44,4 +44,19 @@
 		WHERE
 		HOST_NAME = #{host} AND PORT = #{port}
 	</select>
+
+	<select id="getWorkerNodeByHostType" resultMap="workerNodeRes">
+		SELECT
+		ID,
+		HOST_NAME,
+		PORT,
+		TYPE,
+		LAUNCH_DATE,
+		MODIFIED,
+		CREATED
+		FROM
+		WORKER_NODE
+		WHERE
+		HOST_NAME = #{host} AND TYPE = #{type}
+	</select>
 </mapper>

@@ -15,6 +15,11 @@
  */
 package com.baidu.fsg.uid.worker;
 
+import com.baidu.fsg.uid.utils.DockerUtils;
+import com.baidu.fsg.uid.utils.NetUtils;
+import com.baidu.fsg.uid.worker.entity.WorkerNodeEntity;
+import org.apache.commons.lang.math.RandomUtils;
+
 /**
  * Represents a worker id assigner for {@link com.baidu.fsg.uid.impl.DefaultUidGenerator}
  * 
@@ -29,4 +34,22 @@ public interface WorkerIdAssigner {
      */
     long assignWorkerId();
 
+    /**
+     * Build worker node entity by IP and PORT
+     */
+    default WorkerNodeEntity buildWorkerNode() {
+        WorkerNodeEntity workerNodeEntity = new WorkerNodeEntity();
+        if (DockerUtils.isDocker()) {
+            workerNodeEntity.setType(WorkerNodeType.CONTAINER.value());
+            workerNodeEntity.setHostName(DockerUtils.getDockerHost());
+            workerNodeEntity.setPort(DockerUtils.getDockerPort());
+
+        } else {
+            workerNodeEntity.setType(WorkerNodeType.ACTUAL.value());
+            workerNodeEntity.setHostName(NetUtils.getLocalAddress());
+            workerNodeEntity.setPort(System.currentTimeMillis() + "-" + RandomUtils.nextInt(100000));
+        }
+
+        return workerNodeEntity;
+    }
 }
