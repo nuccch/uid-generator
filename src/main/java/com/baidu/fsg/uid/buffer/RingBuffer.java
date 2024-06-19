@@ -43,12 +43,20 @@ public class RingBuffer {
     private static final int START_POINT = -1;
     private static final long CAN_PUT_FLAG = 0L;
     private static final long CAN_TAKE_FLAG = 1L;
+    /** 默认填充比例 */
     public static final int DEFAULT_PADDING_PERCENT = 50;
 
     /** The size of RingBuffer's slots, each slot hold a UID */
     private final int bufferSize;
+    /** 用来使用与运算方式计算槽位索引，值=槽大小-1 */
+    /** 参考：<br />
+     * https://blog.csdn.net/nlcexiyue/article/details/109327573 取模和与运算的一点关系 <br />
+     * https://blog.csdn.net/epwqgdnbrh/article/details/105255652  取模运算%和按位与&
+     */
     private final long indexMask;
+    /** 真正存放ID的槽 */
     private final long[] slots;
+    /** 存放槽位标记的数组，大小与存放ID的槽一致 */
     private final PaddedAtomicLong[] flags;
 
     /** Tail: last position sequence to produce */
@@ -115,13 +123,16 @@ public class RingBuffer {
         // tail catches the cursor, means that you can't put any cause of RingBuffer is full
         long distance = currentTail - (currentCursor == START_POINT ? 0 : currentCursor);
         if (distance == bufferSize - 1) {
+            // 槽已满
             rejectedPutHandler.rejectPutBuffer(this, uid);
             return false;
         }
 
+        // 先计算槽位索引，再检查该槽位是否可以存值
         // 1. pre-check whether the flag is CAN_PUT_FLAG
         int nextTailIndex = calSlotIndex(currentTail + 1);
         if (flags[nextTailIndex].get() != CAN_PUT_FLAG) {
+            // 槽位不能存放值
             rejectedPutHandler.rejectPutBuffer(this, uid);
             return false;
         }
@@ -130,7 +141,7 @@ public class RingBuffer {
         // 3. update next slot' flag to CAN_TAKE_FLAG
         // 4. publish tail with sequence increase by one
         slots[nextTailIndex] = uid;
-        flags[nextTailIndex].set(CAN_TAKE_FLAG);
+        flags[nextTailIndex].set(CAN_TAKE_FLAG); // 槽位上存入ID之后设置标记为可取，这样就不能往该槽位上再存放新的ID了
         tail.incrementAndGet();
 
         // The atomicity of operations above, guarantees by 'synchronized'. In another word,
@@ -158,14 +169,14 @@ public class RingBuffer {
 
         // trigger padding in an async-mode if reach the threshold
         long currentTail = tail.get();
-        if (currentTail - nextCursor < paddingThreshold) {
+        if (currentTail - nextCursor < paddingThreshold) { // 当前填充的位置与下一个获取的位置距离小于了填充阈值，开始异步填充
             LOGGER.info("Reach the padding threshold:{}. tail:{}, cursor:{}, rest:{}", paddingThreshold, currentTail,
                     nextCursor, currentTail - nextCursor);
             bufferPaddingExecutor.asyncPadding();
         }
 
         // cursor catch the tail, means that there is no more available UID to take
-        if (nextCursor == currentCursor) {
+        if (nextCursor == currentCursor) { // 槽已经空了，不能再取
             rejectedTakeHandler.rejectTakeBuffer(this);
         }
 
@@ -176,7 +187,7 @@ public class RingBuffer {
         // 2. get UID from next slot
         // 3. set next slot flag as CAN_PUT_FLAG.
         long uid = slots[nextCursorIndex];
-        flags[nextCursorIndex].set(CAN_PUT_FLAG);
+        flags[nextCursorIndex].set(CAN_PUT_FLAG); // 取走槽位的ID值之后，需要将该槽位标志设置位可存放，否则无法在该槽位上继续存放新的ID
 
         // Note that: Step 2,3 can not swap. If we set flag before get value of slot, the producer may overwrite the
         // slot with a new UID, and this may cause the consumer take the UID twice after walk a round the ring

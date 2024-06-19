@@ -34,22 +34,31 @@ public class BitsAllocator {
     /**
      * Bits for [sign-> second-> workId-> sequence]
      */
+    /** 标志位数 */
     private int signBits = 1;
+    /** 时间戳位数 */
     private final int timestampBits;
+    /** workerId位数 */
     private final int workerIdBits;
+    /** 1秒内的自增序号位数 */
     private final int sequenceBits;
 
     /**
      * Max value for workId & sequence
      */
+    /** 时间戳位数能够表示的最大秒数 */
     private final long maxDeltaSeconds;
+    /** workerId位数能够表示的最大重启次数 */
     private final long maxWorkerId;
+    /** 1秒内的自增序号位数能够表示的最大ID数量 */
     private final long maxSequence;
 
     /**
      * Shift for timestamp & workerId
      */
+    /** 时间戳左移位数 */
     private final int timestampShift;
+    /** workerId左移位数 */
     private final int workerIdShift;
 
     /**

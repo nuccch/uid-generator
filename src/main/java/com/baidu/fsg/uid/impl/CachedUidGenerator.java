@@ -32,6 +32,16 @@ import com.baidu.fsg.uid.buffer.RingBuffer;
 import com.baidu.fsg.uid.exception.UidGenerateException;
 
 /**
+ * 1.通过“借用未来时间”的方式巧妙地避免了雪花算法中的时钟回拨问题 <br />
+ * 这里的“借用未来时间”是指：在计算“下一秒”可产生的ID列表时，“下一秒”是直接在当前秒的基础上通过累加的方式得到的，没有去获取系统时间。 <br />
+ *
+ * 2.为什么可以“借用未来时间”呢？ <br />
+ * 因为ID是提前在内存中计算出来的，所以再计算“下一秒”内可生成的ID列表时不能直接获取当前的系统时间，只能在当期时间的基础上直接累加计算来获取“下一秒”时间戳。 <br />
+ *
+ * 3.该方式生成ID效率高的原因是：在指定时间秒内生成的ID都是提前计算的，每次获取的时候直接从内存取值，因此效率极高。 <br />
+ *
+ * 4.如果在独立服务中使用该方式生成ID可能存在业务容量易被猜测到的风险（原因：独立服务通常不会总是重启，因此生成的ID是连续的）。 <br />
+ *
  * Represents a cached implementation of {@link UidGenerator} extends
  * from {@link DefaultUidGenerator}, based on a lock free {@link RingBuffer}<p>
  * 
@@ -54,14 +64,19 @@ public class CachedUidGenerator extends DefaultUidGenerator implements Disposabl
 
     /** Spring properties */
     private int boostPower = DEFAULT_BOOST_POWER;
+    /** 填充比例 */
     private int paddingFactor = RingBuffer.DEFAULT_PADDING_PERCENT;
+    /** 定时填充的时间间隔，单位：秒 */
     private Long scheduleInterval;
-    
+
+    /** 拒绝放入ID处理器 */
     private RejectedPutBufferHandler rejectedPutBufferHandler;
+    /** 拒绝获取ID处理器 */
     private RejectedTakeBufferHandler rejectedTakeBufferHandler;
 
     /** RingBuffer */
     private RingBuffer ringBuffer;
+    /** 环形数字填充执行器 */
     private BufferPaddingExecutor bufferPaddingExecutor;
 
     @Override
@@ -96,7 +111,7 @@ public class CachedUidGenerator extends DefaultUidGenerator implements Disposabl
 
     /**
      * Get the UIDs in the same specified second under the max sequence
-     * 一次性就将指定时间秒内可产生的ID生成并保存在内存中
+     * 一次性生成指定时间秒内可产生的ID列表
      * @param currentSecond
      * @return UID list, size of {@link BitsAllocator#getMaxSequence()} + 1
      */
@@ -142,6 +157,7 @@ public class CachedUidGenerator extends DefaultUidGenerator implements Disposabl
         }
         
         // fill in all slots of the RingBuffer
+        // 初始化的时候填充一次buffer
         bufferPaddingExecutor.paddingBuffer();
         
         // start buffer padding threads

@@ -54,7 +54,7 @@ public class BufferPaddingExecutor {
     private final BufferedUidProvider uidProvider;
 
     /** Padding immediately by the thread pool */
-    // 多线程方式填充ID
+    /** 多线程方式填充ID */
     private final ExecutorService bufferPadExecutors;
     /** Padding schedule thread */
     private final ScheduledExecutorService bufferPadSchedule;
@@ -139,7 +139,8 @@ public class BufferPaddingExecutor {
      * Padding buffer fill the slots until to catch the cursor
      */
     public void paddingBuffer() {
-        LOGGER.info("Ready to padding buffer lastSecond:{}. {}", lastSecond.get(), ringBuffer);
+        // 在日志中打印下一秒的时间时需要主动加1，否则就不准确
+        LOGGER.info("Ready to padding buffer lastSecond:{}. {}", lastSecond.get() + 1L, ringBuffer);
 
         // is still running
         if (!running.compareAndSet(false, true)) {
